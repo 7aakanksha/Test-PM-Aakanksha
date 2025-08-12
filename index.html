@@ -3,98 +3,156 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Attendance-o-Meter 3000</title>
+  <title>Attendance-o-Meter</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .holiday { background-color: #fde68a; cursor: not-allowed; }
-    .attended { background-color: #bbf7d0; }
-    .not-attended { background-color: #fecaca; }
+    .holiday { background-color: #fde68a; cursor: not-allowed; } /* Yellow for holidays */
+    .weekend { background-color: #e5e7eb; cursor: not-allowed; } /* Grey for weekends */
+    .attended { background-color: #bbf7d0; } /* Green for attended */
+    .not-attended { background-color: #fecaca; } /* Red for not attended */
   </style>
 </head>
 <body class="bg-gray-50 min-h-screen flex flex-col items-center p-6">
-  <h1 class="text-3xl font-bold mb-4">Attendance-o-Meter 3000 🎯</h1>
-  <p class="mb-6 text-gray-600">Track your August 2025 attendance with style</p>
+  <h1 class="text-3xl font-bold mb-4">Attendance-o-Meter 🎯</h1>
+  <p class="mb-6 text-gray-600">Track your August 2025 attendance</p>
 
+  <!-- Calendar container -->
   <div id="calendar" class="grid grid-cols-7 gap-2 mb-6"></div>
 
+  <!-- Attendance progress -->
   <div id="progress" class="text-lg font-semibold mb-4"></div>
   <div id="message" class="text-xl font-bold text-green-600"></div>
 
+  <!-- Legend for colors -->
+  <div class="mt-4 text-sm text-gray-600">
+    <p><span class="inline-block w-4 h-4 bg-gray-300 mr-1"></span> Weekend</p>
+    <p><span class="inline-block w-4 h-4 bg-yellow-200 mr-1"></span> Holiday</p>
+    <p><span class="inline-block w-4 h-4 bg-green-200 mr-1"></span> Attended</p>
+    <p><span class="inline-block w-4 h-4 bg-red-200 mr-1"></span> Not Attended</p>
+  </div>
+
+  <!-- Reset button -->
   <button onclick="resetAttendance()" class="mt-6 px-4 py-2 bg-red-500 text-white rounded">Reset Attendance</button>
 
   <script>
+    // -----------------------------
+    // CONFIGURATION
+    // -----------------------------
     const month = 7; // August (0-indexed: Jan=0)
     const year = 2025;
-    const holidays = ["2025-08-15", "2025-08-27"];
-    const totalWorkingDays = getTotalWorkingDays();
+    const holidays = ["2025-08-15", "2025-08-27"]; // Fixed holiday list
+
+    // Load saved attendance data or start empty
     let attendance = JSON.parse(localStorage.getItem('attendanceData')) || {};
 
+    // -----------------------------
+    // FUNCTION: Calculate total working days (Mon-Fri, excluding holidays)
+    // -----------------------------
     function getTotalWorkingDays() {
       let days = 0;
       const daysInMonth = new Date(year, month + 1, 0).getDate();
       for (let d = 1; d <= daysInMonth; d++) {
         const date = new Date(year, month, d);
         const dateStr = date.toISOString().split('T')[0];
-        const dayOfWeek = date.getDay(); // 0=Sun, 6=Sat
-        if (!holidays.includes(dateStr) && dayOfWeek !== 0 && dayOfWeek !== 6) {
+        const dayOfWeek = date.getDay(); // 0=Sunday, 6=Saturday
+
+        // Skip weekends and holidays
+        if (dayOfWeek !== 0 && dayOfWeek !== 6 && !holidays.includes(dateStr)) {
           days++;
         }
       }
       return days;
     }
+    const totalWorkingDays = getTotalWorkingDays();
 
+    // -----------------------------
+    // FUNCTION: Render the month calendar
+    // -----------------------------
     function renderCalendar() {
       const calendar = document.getElementById('calendar');
       calendar.innerHTML = '';
       const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-      // Empty slots for alignment
+      // Empty slots for alignment (before the 1st day)
       for (let i = 0; i < (firstDay === 0 ? 6 : firstDay - 1); i++) {
         calendar.innerHTML += `<div></div>`;
       }
 
+      // Loop through all days in month
       for (let d = 1; d <= daysInMonth; d++) {
         const date = new Date(year, month, d);
         const dateStr = date.toISOString().split('T')[0];
+        const dayOfWeek = date.getDay();
         let classes = "p-4 border rounded text-center";
-        let text = d;
-
-        if (holidays.includes(dateStr)) {
+        
+        // Logic: mark weekends
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+          classes += " weekend";
+        }
+        // Logic: mark holidays
+        else if (holidays.includes(dateStr)) {
           classes += " holiday";
-        } else {
-          if (attendance[dateStr]) classes += " attended";
+        }
+        // Logic: mark attended days
+        else {
+          if (attendance[dateStr]) {
+            classes += " attended";
+          }
           classes += " cursor-pointer";
         }
 
-        calendar.innerHTML += `<div class="${classes}" onclick="toggleAttendance('${dateStr}')">${text}</div>`;
+        // Add the day cell
+        calendar.innerHTML += `<div class="${classes}" onclick="toggleAttendance('${dateStr}')">${d}</div>`;
       }
 
+      // Update attendance progress bar/text
       updateProgress();
     }
 
+    // -----------------------------
+    // FUNCTION: Toggle attendance for a date
+    // -----------------------------
     function toggleAttendance(dateStr) {
+      // Prevent toggling weekends/holidays
       if (holidays.includes(dateStr)) return;
+      const dayOfWeek = new Date(dateStr).getDay();
+      if (dayOfWeek === 0 || dayOfWeek === 6) return;
+
+      // Toggle boolean state
       attendance[dateStr] = !attendance[dateStr];
       localStorage.setItem('attendanceData', JSON.stringify(attendance));
       renderCalendar();
     }
 
+    // -----------------------------
+    // FUNCTION: Update progress % and message
+    // -----------------------------
     function updateProgress() {
-      const attendedDays = Object.values(attendance).filter(Boolean).length;
+      const attendedDays = Object.keys(attendance).filter(
+        date => attendance[date] === true
+      ).length;
+
       const percentage = Math.round((attendedDays / totalWorkingDays) * 100);
-      document.getElementById('progress').textContent = `Attendance: ${percentage}% (${attendedDays} of ${totalWorkingDays} working days)`;
+      document.getElementById('progress').textContent = 
+        `Attendance: ${percentage}% (${attendedDays} of ${totalWorkingDays} working days)`;
+
       const msg = document.getElementById('message');
       msg.textContent = percentage >= 50 ? "🎉 Hooray! You're policy-compliant!" : "";
     }
 
+    // -----------------------------
+    // FUNCTION: Reset attendance data
+    // -----------------------------
     function resetAttendance() {
       attendance = {};
       localStorage.removeItem('attendanceData');
       renderCalendar();
     }
 
+    // Initial render
     renderCalendar();
   </script>
 </body>
 </html>
+
