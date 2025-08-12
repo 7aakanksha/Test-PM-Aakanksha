@@ -1,181 +1,177 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Attendance-o-Meter</title>
 <style>
-  body {
-    font-family: Arial, sans-serif;
-    display: flex;
-    margin: 0;
-    background: #f8f9fa;
-  }
-  .calendar {
-    flex: 1;
-    padding: 20px;
-    max-width: 700px;
-  }
-  .title {
-    font-size: 24px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    text-align: center;
-  }
-  .subtitle {
-    text-align: center;
-    color: #666;
-    margin-bottom: 20px;
-  }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-  }
-  .day {
-    padding: 10px;
-    text-align: center;
-    border-radius: 4px;
-    background: #fff;
-    cursor: pointer;
-    border: 1px solid #ddd;
-  }
-  .present { background: #d4edda; }
-  .absent { background: #f8d7da; }
-  .holiday { background: #fff3cd; cursor: default; }
-  .weekend { background: #e0e0e0; cursor: default; }
-  .sidebar {
-    width: 250px;
-    padding: 20px;
-    background: white;
-    border-left: 1px solid #ddd;
-    position: sticky;
-    top: 0;
-    height: fit-content;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  .legend-color {
-    width: 20px;
-    height: 20px;
-    margin-right: 8px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-  }
+  body { font-family: Arial, Helvetica, sans-serif; margin:0; background:#f4f6f8; display:flex; }
+  .calendar { flex:1; padding:28px 36px; max-width:900px; }
+  .title { text-align:center; font-size:32px; font-weight:700; margin-bottom:6px; }
+  .subtitle { text-align:center; color:#666; margin-bottom:18px; }
+  .grid { display:grid; grid-template-columns:repeat(7, 1fr); gap:8px; align-items:start; }
+  .label { font-weight:700; text-align:center; padding:6px 0; }
+  .day { background:#fff; border:1px solid #e0e0e0; border-radius:8px; padding:14px; text-align:center; cursor:pointer; user-select:none; }
+  .present { background:#d9f2dd; }
+  .absent { background:#f7dede; }
+  .holiday { background:#fff1b8; cursor:default; }
+  .weekend { background:#e6e7e8; cursor:default; }
+  .muted { color:#444; }
+  .sidebar { width:300px; padding:28px; background:#fff; border-left:1px solid #e6e6e6; position:sticky; top:0; height:fit-content; }
+  .legend-item { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .legend-swatch { width:26px; height:22px; border-radius:6px; border:1px solid #d0d0d0; }
+  #attendanceSummary { text-align:center; font-weight:700; margin-top:18px; font-size:18px; }
+  .btn { display:inline-block; margin:14px auto 0; padding:10px 18px; background:#e43b34; color:#fff; border-radius:8px; border:none; cursor:pointer; }
 </style>
 </head>
 <body>
 
-<div class="calendar">
-  <div class="title">Attendance-o-Meter</div>
-  <div class="subtitle">Track your August 2025 attendance</div>
-  <div class="grid" id="calendarGrid"></div>
-  <p id="attendanceSummary" style="text-align:center; font-weight:bold;"></p>
-  <div style="text-align:center; margin-top:10px;">
-    <button onclick="resetAttendance()" style="padding:8px 16px; background:red; color:white; border:none; border-radius:4px; cursor:pointer;">
-      Reset Attendance
-    </button>
+  <!-- Calendar column -->
+  <div class="calendar">
+    <div class="title">Attendance-o-Meter</div>
+    <div class="subtitle">Track your August 2025 attendance</div>
+
+    <div id="calendarGrid" class="grid"></div>
+
+    <p id="attendanceSummary">Attendance: 0% (0 of 0 working days)</p>
+    <div style="text-align:center;">
+      <button class="btn" onclick="resetAttendance()">Reset Attendance</button>
+    </div>
   </div>
-</div>
 
-<div class="sidebar">
-  <h3>Legend</h3>
-  <div class="legend-item"><div class="legend-color" style="background:#d4edda"></div> Present</div>
-  <div class="legend-item"><div class="legend-color" style="background:#f8d7da"></div> Absent</div>
-  <div class="legend-item"><div class="legend-color" style="background:#fff3cd"></div> Holiday</div>
-  <div class="legend-item"><div class="legend-color" style="background:#e0e0e0"></div> Weekend</div>
+  <!-- Sticky sidebar -->
+  <aside class="sidebar">
+    <h2 style="margin-top:0">Legend</h2>
+    <div class="legend-item"><div class="legend-swatch" style="background:#d9f2dd"></div><div>Present</div></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#f7dede"></div><div>Absent</div></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#fff1b8"></div><div>Holiday</div></div>
+    <div class="legend-item"><div class="legend-swatch" style="background:#e6e7e8"></div><div>Weekend</div></div>
 
-  <h3>Holidays</h3>
-  <ul>
-    <li>15th August – Independence Day</li>
-    <li>27th August – Ganesh Chaturthi</li>
-  </ul>
-</div>
+    <h2 style="margin-top:18px">Holidays</h2>
+    <ul style="padding-left:18px; margin-top:8px; color:#222;">
+      <li><strong>15 Aug</strong> – Independence Day</li>
+      <li><strong>27 Aug</strong> – Ganesh Chaturthi</li>
+    </ul>
+
+    <p style="margin-top:20px; color:#555; font-size:13px">Tip: click any weekday to toggle Present / Absent. Holidays & weekends are not editable.</p>
+  </aside>
 
 <script>
-// ===== STEP 1: Define month and holiday details =====
-const monthDays = 31; 
-const holidays = [15, 27];
-const startDayIndex = 5; // August 1, 2025 is Friday (0=Sun, 1=Mon,...6=Sat)
-const grid = document.getElementById('calendarGrid');
-let attendance = JSON.parse(localStorage.getItem('attendanceAug2025')) || {};
+/*
+  Attendance-o-Meter (fixed weekend calculation)
+  - Uses Date objects for reliable weekday calculation.
+  - Mon-first calendar layout with leading blanks.
+  - Holidays: 15 & 27 Aug 2025.
+  - Attendance saved in localStorage under key 'attendanceAug2025'.
+*/
 
-// ===== STEP 2: Add weekday labels =====
-const weekdayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-weekdayLabels.forEach(day => {
-  let label = document.createElement('div');
-  label.textContent = day;
-  label.style.fontWeight = 'bold';
-  label.style.textAlign = 'center';
-  grid.appendChild(label);
+/* ---------- CONFIG ---------- */
+const year = 2025;
+const monthIndex = 7; // August (0 = Jan)
+const holidays = [15, 27]; // numeric days in month
+const storageKey = 'attendanceAug2025';
+const grid = document.getElementById('calendarGrid');
+
+/* Load saved attendance state (maps dayNumber -> 'present'|'absent') */
+let attendance = JSON.parse(localStorage.getItem(storageKey)) || {};
+
+/* ---------- Helper: days in month ---------- */
+function daysInMonth(y, mIdx) {
+  return new Date(y, mIdx + 1, 0).getDate();
+}
+
+/* ---------- Render weekday labels (Mon..Sun) ---------- */
+const weekdayLabels = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+weekdayLabels.forEach(lbl => {
+  const node = document.createElement('div');
+  node.className = 'label';
+  node.textContent = lbl;
+  grid.appendChild(node);
 });
 
-// ===== STEP 3: Fill calendar =====
-for (let i = 1; i <= monthDays; i++) {
-  let dayDiv = document.createElement('div');
-  dayDiv.textContent = i;
-  dayDiv.classList.add('day');
+/* ---------- Compute first-day position (Mon-first) ---------- */
+/* Using Date.getDay(): 0 = Sun, 1 = Mon, ... 6 = Sat
+   Convert to Mon-first index: (getDay + 6) % 7 => Mon=0 ... Sun=6 */
+const firstDay = new Date(year, monthIndex, 1);
+const firstDayMonIndex = (firstDay.getDay() + 6) % 7; 
 
-  const dayOfWeek = (i + startDayIndex - 1) % 7;
-  const isWeekend = (dayOfWeek === 5 || dayOfWeek === 6);
+/* Insert blank cells before day 1 to align with Mon column */
+for (let i = 0; i < firstDayMonIndex; i++) {
+  const blank = document.createElement('div');
+  blank.className = 'day'; blank.style.visibility = 'hidden'; // keep space but invisible
+  grid.appendChild(blank);
+}
 
-  // Apply holiday/weekend logic
-  if (holidays.includes(i)) {
-    dayDiv.classList.add('holiday');
+/* ---------- Create day cells ---------- */
+const totalDays = daysInMonth(year, monthIndex);
+for (let d = 1; d <= totalDays; d++) {
+  const date = new Date(year, monthIndex, d);
+  const jsWeekday = date.getDay(); // 0=Sun .. 6=Sat
+  const isWeekend = (jsWeekday === 6 || jsWeekday === 0); // Sat or Sun
+  const isHoliday = holidays.includes(d);
+
+  const cell = document.createElement('div');
+  cell.className = 'day';
+  cell.textContent = d;
+
+  // Mark holiday or weekend first (non-clickable)
+  if (isHoliday) {
+    cell.classList.add('holiday');
+    cell.title = 'Holiday';
   } else if (isWeekend) {
-    dayDiv.classList.add('weekend');
+    cell.classList.add('weekend');
+    cell.title = 'Weekend';
   } else {
-    // Mark saved attendance or default to absent
-    if (attendance[i] === 'present') {
-      dayDiv.classList.add('present');
-    } else if (attendance[i] === 'absent') {
-      dayDiv.classList.add('absent');
-    }
+    // Weekday: apply saved state if any
+    if (attendance[d] === 'present') cell.classList.add('present');
+    else if (attendance[d] === 'absent') cell.classList.add('absent');
 
-    // Allow click to toggle attendance
-    dayDiv.addEventListener('click', () => {
-      if (dayDiv.classList.contains('present')) {
-        dayDiv.classList.remove('present');
-        dayDiv.classList.add('absent');
-        attendance[i] = 'absent';
-      } else if (dayDiv.classList.contains('absent')) {
-        dayDiv.classList.remove('absent');
-        dayDiv.classList.add('present');
-        attendance[i] = 'present';
+    // Toggle behavior: weekday only
+    cell.addEventListener('click', () => {
+      if (cell.classList.contains('present')) {
+        cell.classList.remove('present');
+        cell.classList.add('absent');
+        attendance[d] = 'absent';
+      } else if (cell.classList.contains('absent')) {
+        cell.classList.remove('absent');
+        cell.classList.add('present');
+        attendance[d] = 'present';
       } else {
-        dayDiv.classList.add('present');
-        attendance[i] = 'present';
+        cell.classList.add('present');
+        attendance[d] = 'present';
       }
-      localStorage.setItem('attendanceAug2025', JSON.stringify(attendance));
+      localStorage.setItem(storageKey, JSON.stringify(attendance));
       updateSummary();
     });
   }
 
-  grid.appendChild(dayDiv);
+  grid.appendChild(cell);
 }
 
+/* ---------- Summary logic: counts working days (Mon-Fri excluding holidays) ---------- */
+function updateSummary() {
+  const workingDays = [];
+  for (let d = 1; d <= totalDays; d++) {
+    const dt = new Date(year, monthIndex, d);
+    const jsWeekday = dt.getDay(); // 0..6
+    const isWeekend = (jsWeekday === 6 || jsWeekday === 0);
+    if (!isWeekend && !holidays.includes(d)) workingDays.push(d);
+  }
+
+  const attended = workingDays.filter(d => attendance[d] === 'present').length;
+  const percent = workingDays.length ? Math.round((attended / workingDays.length) * 100) : 0;
+  document.getElementById('attendanceSummary').textContent =
+    `Attendance: ${percent}% (${attended} of ${workingDays.length} working days)`;
+}
+
+/* Initial summary */
 updateSummary();
 
-// ===== STEP 4: Attendance summary =====
-function updateSummary() {
-  const workingDays = Array.from({ length: monthDays }, (_, idx) => idx + 1)
-    .filter(day => {
-      const dayOfWeek = (day + startDayIndex - 1) % 7;
-      return !holidays.includes(day) && !(dayOfWeek === 5 || dayOfWeek === 6);
-    });
-
-  const attendedDays = workingDays.filter(day => attendance[day] === 'present');
-  const percent = Math.round((attendedDays.length / workingDays.length) * 100);
-  document.getElementById('attendanceSummary').textContent =
-    `Attendance: ${percent}% (${attendedDays.length} of ${workingDays.length} working days)`;
-}
-
-// ===== STEP 5: Reset function =====
+/* Reset helper */
 function resetAttendance() {
-  localStorage.removeItem('attendanceAug2025');
+  if (!confirm('Reset saved attendance for August 2025?')) return;
+  attendance = {};
+  localStorage.removeItem(storageKey);
   location.reload();
 }
 </script>
